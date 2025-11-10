@@ -1,0 +1,5 @@
+{
+  "name": "React Music Player",
+  "description": "A Spotify-like music player built with React, TypeScript, and Tailwind CSS. It features a fully functional player with playback controls, progress bar, volume control, and a playlist view.",
+  "requestFramePermissions": []
+}
