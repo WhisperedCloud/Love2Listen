@@ -1,3 +1,4 @@
+
 import React, {
   useState,
   useRef,
@@ -7,8 +8,6 @@ import React, {
   useContext,
 } from 'react';
 import { Song, Playlist, RepeatMode } from '../types';
-import { playlists as initialPlaylists } from '../data/mockData';
-// Fix: Import GoogleGenAI for fetching lyrics.
 import { GoogleGenAI } from '@google/genai';
 
 declare global {
@@ -17,6 +16,57 @@ declare global {
   }
 }
 
+// --- IndexedDB Helpers ---
+const DB_NAME = 'MusicPlayerDB';
+const DB_VERSION = 1;
+const SONG_STORE_NAME = 'songs';
+
+interface StoredSong {
+    id: number;
+    title: string;
+    artist: string;
+    album: string;
+    duration: number;
+    audioBlob: Blob;
+    coverArtBlob: Blob | null;
+}
+
+const openDB = (): Promise<IDBDatabase> => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    request.onupgradeneeded = (event) => {
+      const db = (event.target as IDBOpenDBRequest).result;
+      if (!db.objectStoreNames.contains(SONG_STORE_NAME)) {
+        db.createObjectStore(SONG_STORE_NAME, { keyPath: 'id' });
+      }
+    };
+  });
+};
+
+// FIX: Changed from generic arrow function to a regular function to avoid TSX parsing ambiguity.
+function getFromDB<T>(db: IDBDatabase, storeName: string, key: IDBValidKey): Promise<T | undefined> {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(storeName, 'readonly');
+        const store = transaction.objectStore(storeName);
+        const request = store.get(key);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+    });
+}
+
+const saveToDB = (db: IDBDatabase, storeName: string, data: any): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(storeName, 'readwrite');
+        const store = transaction.objectStore(storeName);
+        const request = store.put(data);
+        request.onerror = () => reject(request.error);
+        transaction.oncomplete = () => resolve();
+    });
+};
+
+// --- Player Context ---
 interface PlayerContextType {
   playlists: Playlist[];
   setPlaylists: React.Dispatch<React.SetStateAction<Playlist[]>>;
@@ -32,6 +82,7 @@ interface PlayerContextType {
   isShuffled: boolean;
   repeatMode: RepeatMode;
   isLyricsVisible: boolean;
+  isLoading: boolean; // For initial data load
   togglePlayPause: () => void;
   playSong: (song: Song, playlist?: Playlist) => void;
   playNext: () => void;
@@ -129,7 +180,8 @@ const generateCollageCover = async (songs: Song[]): Promise<string> => {
 export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [playlists, setPlaylists] = useState<Playlist[]>(initialPlaylists);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<number | null>(null);
   const [queue, setQueue] = useState<Song[]>([]);
   const [shuffledQueue, setShuffledQueue] = useState<Song[]>([]);
@@ -151,6 +203,65 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
   const currentQueue = isShuffled ? shuffledQueue : queue;
   const currentSong = currentSongIndex >= 0 ? currentQueue[currentSongIndex] : null;
 
+  // --- Data Persistence ---
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const storedPlaylistsMeta = localStorage.getItem('music-player-playlists');
+        if (storedPlaylistsMeta) {
+          const playlistsMeta: Playlist[] = JSON.parse(storedPlaylistsMeta);
+          const db = await openDB();
+          
+          const hydratedPlaylists = await Promise.all(
+            playlistsMeta.map(async (playlist) => {
+              const hydratedSongs = await Promise.all(
+                playlist.songs.map(async (songStub) => {
+                  const storedSong = await getFromDB<StoredSong>(db, SONG_STORE_NAME, songStub.id);
+                  if (storedSong) {
+                    return {
+                      ...songStub,
+                      url: URL.createObjectURL(storedSong.audioBlob),
+                      coverArt: storedSong.coverArtBlob ? URL.createObjectURL(storedSong.coverArtBlob) : defaultCoverArt,
+                      duration: storedSong.duration,
+                    };
+                  }
+                  return null;
+                })
+              );
+              return { ...playlist, songs: hydratedSongs.filter((s): s is Song => s !== null) };
+            })
+          );
+          setPlaylists(hydratedPlaylists);
+          if (hydratedPlaylists.length > 0) {
+            setSelectedPlaylistId(hydratedPlaylists[0].id);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load data from storage:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [defaultCoverArt]);
+  
+  useEffect(() => {
+      // Don't save during initial load
+      if (isLoading) return;
+
+      try {
+          const playlistsToStore = playlists.map(playlist => ({
+              ...playlist,
+              songs: playlist.songs.map(({ id, title, artist, album, lyrics }) => ({ id, title, artist, album, lyrics }))
+          }));
+          localStorage.setItem('music-player-playlists', JSON.stringify(playlistsToStore));
+      } catch (error) {
+          console.error("Failed to save playlists to localStorage:", error);
+      }
+  }, [playlists, isLoading]);
+
+  // --- Playback Logic ---
   const playNext = useCallback(() => {
     if (currentQueue.length === 0) return;
     let nextIndex = currentSongIndex + 1;
@@ -168,7 +279,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const handleSongEnd = useCallback(() => {
     if (repeatMode === RepeatMode.SONG) {
-        audioRef.current?.play();
+        if (audioRef.current) {
+          audioRef.current.currentTime = 0;
+          audioRef.current?.play();
+        }
     } else {
         playNext();
     }
@@ -231,8 +345,8 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
   };
   
   const playSong = (song: Song, playlist?: Playlist) => {
-    const playlistToUse = playlist?.songs || queue.length > 0 ? queue : [song];
-    const newQueue = (playlist?.songs || playlistToUse).map(s => ({ ...s, queueId: `${s.id}_${Date.now()}_${Math.random()}` }));
+    const playlistToUse = playlist?.songs || (queue.length > 0 ? queue : [song]);
+    const newQueue = playlistToUse.map(s => ({ ...s, queueId: `${s.id}_${Date.now()}_${Math.random()}` }));
     
     setQueue(newQueue);
     
@@ -303,12 +417,10 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
         setShuffledQueue(newShuffledQueue);
     }
     
-    // Adjust current index if needed
     if (currentSong) {
-        const newIndex = (isShuffled ? shuffledQueue : queue).findIndex(s => s.queueId === currentSong.queueId);
-        if (newIndex < currentSongIndex) {
-            setCurrentSongIndex(currentSongIndex - 1);
-        }
+        const currentActiveQueue = isShuffled ? shuffledQueue.filter(s => s.queueId !== queueId) : newQueue;
+        const newIndex = currentActiveQueue.findIndex(s => s.queueId === currentSong.queueId);
+        setCurrentSongIndex(newIndex);
     }
   };
 
@@ -344,16 +456,16 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const addFilesToPlaylist = async (files: FileList, playlistId: number) => {
     const newSongs: Song[] = [];
+    const db = await openDB();
 
     for (const file of Array.from(files)) {
-        const songUrl = URL.createObjectURL(file);
         const duration = await getAudioDuration(file);
-
-        let songData: Omit<Song, 'id' | 'duration' | 'url'> = {
+        
+        let coverArtBlob: Blob | null = null;
+        let songData = {
             title: file.name.replace(/\.[^/.]+$/, ""),
             artist: 'Unknown Artist',
             album: 'Unknown Album',
-            coverArt: defaultCoverArt,
         };
 
         if (window.jsmediatags) {
@@ -362,11 +474,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
                     onSuccess: (tag: any) => {
                         const { title, artist, album, picture } = tag.tags;
                         if (picture) {
-                            let base64String = "";
-                            for (let i = 0; i < picture.data.length; i++) {
-                                base64String += String.fromCharCode(picture.data[i]);
-                            }
-                            songData.coverArt = `data:${picture.format};base64,${window.btoa(base64String)}`;
+                            coverArtBlob = new Blob([new Uint8Array(picture.data)], { type: picture.format });
                         }
                         songData.title = title || songData.title;
                         songData.artist = artist || songData.artist;
@@ -381,14 +489,27 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
             });
         }
         
-        newSongs.push({
+        const songId = Date.now() + Math.random();
+        const storedSong: StoredSong = {
+            id: songId,
             ...songData,
-            id: Date.now() + Math.random(),
             duration,
-            url: songUrl,
+            audioBlob: file,
+            coverArtBlob,
+        };
+        await saveToDB(db, SONG_STORE_NAME, storedSong);
+        
+        newSongs.push({
+            id: songId,
+            ...songData,
+            duration,
+            url: URL.createObjectURL(file),
+            coverArt: coverArtBlob ? URL.createObjectURL(coverArtBlob) : defaultCoverArt,
         });
     }
     
+    db.close();
+
     const targetPlaylist = playlists.find(p => p.id === playlistId);
     if (!targetPlaylist) return;
 
@@ -408,10 +529,11 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!song || song.lyrics) return;
 
     const updateSongWithLyrics = (lyrics: string) => {
-      setQueue(prev => prev.map(s => (s.queueId === song.queueId ? { ...s, lyrics } : s)));
+      const newLyrics = lyrics.trim();
+      setQueue(prev => prev.map(s => (s.queueId === song.queueId ? { ...s, lyrics: newLyrics } : s)));
       setPlaylists(prev => prev.map(p => ({
         ...p,
-        songs: p.songs.map(s => (s.id === song.id ? { ...s, lyrics } : s)),
+        songs: p.songs.map(s => (s.id === song.id ? { ...s, lyrics: newLyrics } : s)),
       })));
     };
 
@@ -424,8 +546,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
           contents: prompt,
       });
 
-      const text = response.text;
-      updateSongWithLyrics(text);
+      updateSongWithLyrics(response.text);
     } catch (e) {
       console.error('Failed to fetch lyrics', e);
       updateSongWithLyrics("Couldn't find lyrics for this song.");
@@ -477,6 +598,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
     isShuffled,
     repeatMode,
     isLyricsVisible,
+    isLoading,
     togglePlayPause,
     playSong,
     playNext,

@@ -14,6 +14,7 @@ const MainView: React.FC = () => {
     bioError,
     fetchArtistBio,
     updatePlaylistCover,
+    isLoading,
   } = usePlayer();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -49,12 +50,21 @@ const MainView: React.FC = () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  if (!selectedPlaylist) {
+  if (isLoading) {
     return (
       <main className="flex-1 overflow-y-auto bg-neutral-900 text-white p-8 flex flex-col items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+        <h2 className="text-2xl font-bold mt-4">Loading your library...</h2>
+      </main>
+    );
+  }
+
+  if (!selectedPlaylist) {
+    return (
+      <main className="flex-1 overflow-y-auto bg-neutral-900 text-white p-8 flex flex-col items-center justify-center text-center">
          <MusicNoteIcon size={64} color="#555" />
-        <h2 className="text-2xl font-bold mt-4">No Playlist Selected</h2>
-        <p className="text-neutral-400">Select a playlist from your library to see the songs.</p>
+        <h2 className="text-2xl font-bold mt-4">Welcome to Your Music Player</h2>
+        <p className="text-neutral-400 mt-2">Create a playlist or upload songs from the sidebar to begin.</p>
       </main>
     );
   }
