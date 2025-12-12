@@ -95,37 +95,37 @@ const Player: React.FC = () => {
   }
 
   return (
-    <footer className="h-20 md:h-24 bg-neutral-900 border-t border-neutral-800 p-2 flex md:grid md:grid-cols-3 justify-between items-center text-white">
+    <footer className="h-20 lg:h-24 bg-neutral-900 border-t border-neutral-800 p-2 flex lg:grid lg:grid-cols-3 justify-between items-center text-white">
       {/* Song Info */}
-      <div className="flex items-center gap-3 md:gap-4 w-1/3 md:w-auto overflow-hidden">
-        <img src={currentSong.coverArt} alt={currentSong.title} className="w-10 h-10 md:w-16 md:h-16 rounded flex-shrink-0" />
+      <div className="flex items-center gap-3 lg:gap-4 w-1/3 lg:w-auto overflow-hidden">
+        <img src={currentSong.coverArt} alt={currentSong.title} className="w-10 h-10 lg:w-16 lg:h-16 rounded flex-shrink-0" />
         <div className="min-w-0">
-          <p className="font-semibold text-sm md:text-base truncate">{currentSong.title}</p>
-          <p className="text-xs md:text-sm text-neutral-400 truncate">{currentSong.artist}</p>
+          <p className="font-semibold text-sm lg:text-base truncate">{currentSong.title}</p>
+          <p className="text-xs lg:text-sm text-neutral-400 truncate">{currentSong.artist}</p>
         </div>
       </div>
 
       {/* Player Controls */}
-      <div className="flex flex-col items-center justify-center flex-1 max-w-[50%] md:max-w-none">
-        <div className="flex items-center gap-2 md:gap-4">
-          <button onClick={toggleShuffle} className="hidden md:block text-neutral-400 hover:text-white transition-colors">
+      <div className="flex flex-col items-center justify-center flex-1 max-w-[50%] lg:max-w-none">
+        <div className="flex items-center gap-2 lg:gap-4">
+          <button onClick={toggleShuffle} className="hidden lg:block text-neutral-400 hover:text-white transition-colors">
             <ShuffleIcon color={isShuffled ? '#10B981' : 'currentColor'} />
           </button>
           <button onClick={playPrevious} className="text-neutral-400 hover:text-white transition-colors">
             <PreviousIcon />
           </button>
-          <button onClick={togglePlayPause} className="bg-white text-black rounded-full p-1 md:p-2 w-8 h-8 flex items-center justify-center hover:scale-105 transition-transform">
+          <button onClick={togglePlayPause} className="bg-white text-black rounded-full p-1 lg:p-2 w-8 h-8 flex items-center justify-center hover:scale-105 transition-transform">
             {isPlaying ? <PauseIcon /> : <PlayIcon color='black' />}
           </button>
           <button onClick={playNext} className="text-neutral-400 hover:text-white transition-colors">
             <NextIcon />
           </button>
-          <button onClick={toggleRepeat} className="hidden md:block text-neutral-400 hover:text-white transition-colors">
+          <button onClick={toggleRepeat} className="hidden lg:block text-neutral-400 hover:text-white transition-colors">
             <RepeatIcon mode={repeatMode} />
           </button>
         </div>
-        <div className="flex items-center gap-2 w-full max-w-lg mt-1 md:mt-2 group text-[10px] md:text-xs">
-          <span className="text-neutral-400 w-8 text-right hidden md:inline">{formatTime(currentTime)}</span>
+        <div className="flex items-center gap-2 w-full max-w-lg mt-1 lg:mt-2 group text-[10px] lg:text-xs">
+          <span className="text-neutral-400 w-8 text-right hidden lg:inline">{formatTime(currentTime)}</span>
           <div className="relative w-full h-1 bg-neutral-600 rounded-lg">
             <div className="absolute top-0 left-0 h-full bg-white rounded-lg group-hover:bg-emerald-500" style={{ width: `${progress}%` }}></div>
             <input
@@ -137,19 +137,19 @@ const Player: React.FC = () => {
               className="absolute top-0 left-0 w-full h-full bg-transparent appearance-none cursor-pointer [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:opacity-0 group-hover:[&::-webkit-slider-thumb]:opacity-100 transition-opacity"
             />
           </div>
-          <span className="text-neutral-400 w-8 hidden md:inline">{formatTime(duration)}</span>
+          <span className="text-neutral-400 w-8 hidden lg:inline">{formatTime(duration)}</span>
         </div>
       </div>
 
       {/* Volume & Other Controls */}
-      <div className="flex items-center justify-end gap-2 md:gap-4 relative w-1/3 md:w-auto">
+      <div className="flex items-center justify-end gap-2 lg:gap-4 relative w-1/3 lg:w-auto">
         <button onClick={toggleLyricsView} className="text-neutral-400 hover:text-white transition-colors">
           <LyricsIcon color={isLyricsVisible ? '#10B981' : 'currentColor'} />
         </button>
-        <button onClick={() => setIsQueueVisible(!isQueueVisible)} className="hidden md:block text-neutral-400 hover:text-white transition-colors">
+        <button onClick={() => setIsQueueVisible(!isQueueVisible)} className="hidden lg:block text-neutral-400 hover:text-white transition-colors">
           <QueueIcon />
         </button>
-        <div className="hidden md:flex items-center gap-2 w-32 group">
+        <div className="hidden lg:flex items-center gap-2 w-32 group">
           <button onClick={() => setVolume(volume > 0 ? 0 : 0.75)} className="text-neutral-400 hover:text-white transition-colors">
             {volume === 0 ? <VolumeMuteIcon /> : <VolumeIcon />}
           </button>

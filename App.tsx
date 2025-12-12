@@ -27,7 +27,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="h-screen flex flex-col font-sans">
-      <div className="flex flex-1 overflow-hidden flex-col md:flex-row mb-0 md:mb-0">
+      <div className="flex flex-1 overflow-hidden flex-col lg:flex-row mb-0 lg:mb-0">
         <Sidebar />
         {renderMainView()}
       </div>

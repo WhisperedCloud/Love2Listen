@@ -13,7 +13,7 @@ const Sidebar: React.FC = () => {
     } = usePlayer();
 
     return (
-        <aside className="w-64 bg-black text-neutral-300 hidden md:flex flex-col p-2 h-full">
+        <aside className="w-64 bg-black text-neutral-300 hidden lg:flex flex-col p-2 h-full">
             <div className="bg-neutral-900 rounded-lg p-2 mb-2">
                 <nav className="flex flex-col gap-1">
                     <button onClick={() => setCurrentView('home')} className={`flex items-center gap-4 p-2 rounded font-bold transition-colors ${currentView === 'home' ? 'text-white' : 'text-neutral-400 hover:text-white'}`}>
@@ -63,7 +63,7 @@ export const MobileNav: React.FC = () => {
     const { currentView, setCurrentView } = usePlayer();
 
     return (
-        <nav className="md:hidden flex justify-around items-center bg-black p-4 text-neutral-400 border-t border-neutral-800">
+        <nav className="lg:hidden flex justify-around items-center bg-black p-4 text-neutral-400 border-t border-neutral-800">
             <button
                 onClick={() => setCurrentView('home')}
                 className={`flex flex-col items-center gap-1 ${currentView === 'home' || currentView === 'playlist' ? 'text-white' : ''}`}

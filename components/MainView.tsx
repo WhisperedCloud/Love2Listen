@@ -110,7 +110,7 @@ const MainView: React.FC = () => {
   return (
     <main className="flex-1 overflow-y-auto bg-gradient-to-b from-neutral-800/60 to-neutral-900 text-white">
       <div className="p-4 md:p-8">
-        <div className="flex flex-col md:flex-row items-center md:items-end gap-6 mb-8 text-center md:text-left">
+        <div className="flex flex-col lg:flex-row items-center lg:items-end gap-6 mb-8 text-center lg:text-left">
           <div className="relative group flex-shrink-0" onClick={triggerFileSelect}>
             <img src={selectedPlaylist.coverArt} alt={selectedPlaylist.name} className="w-48 h-48 rounded shadow-2xl object-cover" />
             <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
@@ -132,7 +132,7 @@ const MainView: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center justify-center md:justify-start gap-6 mb-8">
+        <div className="flex items-center justify-center lg:justify-start gap-6 mb-8">
           <button
             onClick={() => startPlaylistPlayback(selectedPlaylist, false)}
             className="bg-emerald-500 rounded-full p-4 hover:bg-emerald-400 transition-transform hover:scale-105 disabled:bg-neutral-600"
@@ -164,7 +164,7 @@ const MainView: React.FC = () => {
                 <tr>
                   <th className="p-2 w-10 font-normal text-center">#</th>
                   <th className="p-2 font-normal">Title</th>
-                  <th className="p-2 font-normal hidden md:table-cell">Album</th>
+                  <th className="p-2 font-normal hidden lg:table-cell">Album</th>
                   <th className="p-2 font-normal w-16 hidden sm:table-cell">Duration</th>
                   <th className="p-2 font-normal w-10"></th>
                 </tr>
@@ -197,7 +197,7 @@ const MainView: React.FC = () => {
                           <p className="text-sm text-neutral-400 truncate">{song.artist}</p>
                         </div>
                       </td>
-                      <td className="p-3 text-neutral-400 truncate hidden md:table-cell">{song.album}</td>
+                      <td className="p-3 text-neutral-400 truncate hidden lg:table-cell">{song.album}</td>
                       <td className="p-3 text-neutral-400 hidden sm:table-cell">{formatDuration(song.duration)}</td>
                       <td className="p-3 text-neutral-400 relative">
                         <button onClick={() => setActiveMenu(activeMenu === song.id ? null : song.id)} className="opacity-0 group-hover:opacity-100">
