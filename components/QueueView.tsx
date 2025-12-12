@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { usePlayer } from '../hooks/usePlayer';
-import { CloseIcon, TrashIcon, PlayIcon, PauseIcon } from './Icons';
+import { CloseIcon, TrashIcon, PlayIcon, PauseIcon, SaveIcon } from './Icons';
 import { Song } from '../types';
 
 interface QueueViewProps {
@@ -9,63 +8,87 @@ interface QueueViewProps {
 }
 
 const QueueView: React.FC<QueueViewProps> = ({ onClose }) => {
-  const { queue, currentSong, isPlaying, playSong, removeFromQueue, togglePlayPause } = usePlayer();
+  const { queue, currentSong, isPlaying, playSong, removeFromQueue, togglePlayPause, saveQueueAsPlaylist, setQueue } = usePlayer();
 
   const handlePlayPause = (song: Song) => {
     if (currentSong?.queueId === song.queueId) {
         togglePlayPause();
     } else {
-        playSong(song);
+        // Find the index of the clicked song in the queue and play from there
+        const songIndex = queue.findIndex(s => s.queueId === song.queueId);
+        if (songIndex !== -1) {
+            // A simplified play from queue logic might be needed here.
+            // For now, this might reset the main playlist queue.
+            playSong(song, { id: -1, name: "Queue", songs: queue, coverArt: '' });
+        }
     }
+  };
+  
+  const handleClearQueue = () => {
+    setQueue([]);
+  };
+
+  const handleSaveQueue = () => {
+    saveQueueAsPlaylist();
+    onClose();
   };
 
   return (
     <div className="absolute bottom-full right-0 mb-2 w-80 bg-neutral-800 rounded-lg shadow-lg text-white max-h-96 flex flex-col z-20">
       <div className="p-4 border-b border-neutral-700 flex justify-between items-center flex-shrink-0">
         <h3 className="font-bold">Queue</h3>
-        <button onClick={onClose} className="text-neutral-400 hover:text-white">
-          <CloseIcon />
-        </button>
+        <div className="flex items-center gap-2">
+          {queue.length > 0 && (
+             <>
+                <button onClick={handleSaveQueue} className="text-neutral-400 hover:text-white" title="Save as Playlist">
+                    <SaveIcon />
+                </button>
+                <button onClick={handleClearQueue} className="text-neutral-400 hover:text-white" title="Clear queue">
+                    <TrashIcon />
+                </button>
+             </>
+          )}
+          <button onClick={onClose} className="text-neutral-400 hover:text-white">
+            <CloseIcon />
+          </button>
+        </div>
       </div>
       <div className="overflow-y-auto">
-        {queue.length > 0 ? (
-          <ul>
-            {queue.map((song) => {
-              const isActive = currentSong?.queueId === song.queueId;
-              return (
-                <li
-                  key={song.queueId}
-                  className={`group flex items-center justify-between p-3 hover:bg-neutral-700 ${isActive ? 'bg-neutral-700/50' : ''}`}
-                  onDoubleClick={() => handlePlayPause(song)}
-                >
-                  <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="relative w-10 h-10 flex-shrink-0">
-                      <img src={song.coverArt} alt={song.title} className="w-10 h-10 rounded object-cover" />
-                      <button 
-                        onClick={() => handlePlayPause(song)} 
-                        className={`absolute inset-0 bg-black/50 flex items-center justify-center rounded transition-opacity duration-300 opacity-0 group-hover:opacity-100 ${isActive ? 'opacity-100' : ''}`}
-                      >
-                          {isActive && isPlaying ? <PauseIcon /> : <PlayIcon color={isActive ? '#10B981' : 'white'}/>}
-                      </button>
+        {currentSong && (
+            <div className="p-2">
+                <p className="text-sm font-bold px-2 mb-2 text-neutral-400">Now Playing</p>
+                <div className="flex items-center gap-3 p-2 rounded bg-neutral-700/50">
+                    <img src={currentSong.coverArt} alt={currentSong.title} className="w-10 h-10 rounded" />
+                    <div>
+                        <p className="font-semibold text-emerald-400">{currentSong.title}</p>
+                        <p className="text-sm text-neutral-300">{currentSong.artist}</p>
                     </div>
-                    <div className="truncate">
-                      <p className={`font-medium truncate ${isActive ? 'text-emerald-400' : 'text-white'}`}>{song.title}</p>
-                      <p className="text-sm text-neutral-400 truncate">{song.artist}</p>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => song.queueId && removeFromQueue(song.queueId)}
-                    className="text-neutral-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity ml-2 flex-shrink-0"
-                    aria-label="Remove from queue"
-                  >
-                    <TrashIcon />
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p className="p-4 text-center text-neutral-400">Queue is empty.</p>
+                </div>
+            </div>
+        )}
+        {queue.length > 0 && (
+            <div className="p-2">
+                <p className="text-sm font-bold px-2 mb-2 text-neutral-400">Next Up</p>
+                <ul>
+                {queue.map((song) => (
+                    <li key={song.queueId} className="flex items-center justify-between p-2 rounded group hover:bg-neutral-700/50">
+                        <div className="flex items-center gap-3 overflow-hidden">
+                            <img src={song.coverArt} alt={song.title} className="w-10 h-10 rounded" />
+                            <div className="overflow-hidden">
+                                <p className="font-semibold truncate">{song.title}</p>
+                                <p className="text-sm text-neutral-400 truncate">{song.artist}</p>
+                            </div>
+                        </div>
+                        <button onClick={() => removeFromQueue(song.queueId!)} className="ml-2 text-neutral-400 opacity-0 group-hover:opacity-100 hover:text-white">
+                            <TrashIcon />
+                        </button>
+                    </li>
+                ))}
+                </ul>
+            </div>
+        )}
+        {queue.length === 0 && !currentSong && (
+            <p className="p-4 text-center text-neutral-400">The queue is empty.</p>
         )}
       </div>
     </div>

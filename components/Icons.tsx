@@ -109,3 +109,46 @@ export const EditIcon: React.FC<IconProps> = ({ color = 'currentColor', size = 2
         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
     </svg>
 );
+
+export const HomeIcon: React.FC<IconProps> = ({ color = 'currentColor', size = 24, className }) => (
+    <svg height={size} width={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>
+    </svg>
+);
+
+export const SearchIcon: React.FC<IconProps> = ({ color = 'currentColor', size = 24, className }) => (
+    <svg height={size} width={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+);
+
+export const ThreeDotsIcon: React.FC<IconProps> = ({ color = 'currentColor', size = 20, className }) => (
+    <svg height={size} width={size} viewBox="0 0 24 24" fill={color} className={className}>
+        <circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle><circle cx="5" cy="12" r="2"></circle>
+    </svg>
+);
+
+export const SaveIcon: React.FC<IconProps> = ({ color = 'currentColor', size = 20, className }) => (
+    <svg height={size} width={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+        <polyline points="7 3 7 8 15 8"></polyline>
+    </svg>
+);
+
+export const SoundBarsIcon: React.FC<IconProps> = ({ color = '#10B981', size = 16, className }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} className={className}>
+        <rect className="animate-[grow] origin-b" x="4" y="6" width="4" height="12" style={{ animationDelay: '-0.4s' }} />
+        <rect className="animate-[grow] origin-b" x="10" y="6" width="4" height="12" />
+        <rect className="animate-[grow] origin-b" x="16" y="6" width="4" height="12" style={{ animationDelay: '-0.2s' }} />
+        <style>{`
+            @keyframes grow {
+                0%, 100% { transform: scaleY(0.3); }
+                50% { transform: scaleY(1); }
+            }
+            .animate-\\[grow\\] {
+                animation: grow 1s ease-in-out infinite;
+            }
+        `}</style>
+    </svg>
+);
