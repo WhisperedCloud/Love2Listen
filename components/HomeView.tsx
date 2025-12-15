@@ -1,9 +1,9 @@
 import React from 'react';
 import { usePlayer } from '../hooks/usePlayer';
-import { MusicNoteIcon } from './Icons';
+import { MusicNoteIcon, PlusIcon } from './Icons';
 
 const HomeView: React.FC = () => {
-  const { playlists, setSelectedPlaylistId, isLoading } = usePlayer();
+  const { playlists, setSelectedPlaylistId, isLoading, openModal } = usePlayer();
 
   if (isLoading) {
     return (
@@ -15,8 +15,11 @@ const HomeView: React.FC = () => {
   }
 
   return (
-    <main className="flex-1 overflow-y-auto bg-gradient-to-b from-neutral-800 to-neutral-900 text-white p-8">
-      <h1 className="text-3xl font-bold mb-6">Your Library</h1>
+    <main className="flex-1 overflow-y-auto bg-gradient-to-b from-neutral-800 to-neutral-900 text-white p-4 md:p-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold">Your Library</h1>
+      </div>
+
       {playlists.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
           {playlists.map(playlist => (
@@ -36,6 +39,14 @@ const HomeView: React.FC = () => {
           <MusicNoteIcon size={64} />
           <h2 className="text-2xl font-bold mt-4 text-white">Your library is empty</h2>
           <p className="mt-2">Create a playlist or upload some songs to get started.</p>
+          <div className="flex gap-4 mt-6 lg:hidden">
+            <button onClick={() => openModal('createPlaylist')} className="bg-neutral-800 text-white px-4 py-2 rounded-full hover:bg-neutral-700">
+              Create Playlist
+            </button>
+            <button onClick={() => openModal('upload')} className="bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-500">
+              Upload Songs
+            </button>
+          </div>
         </div>
       )}
     </main>

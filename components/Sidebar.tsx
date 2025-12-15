@@ -60,30 +60,41 @@ const Sidebar: React.FC = () => {
 };
 
 export const MobileNav: React.FC = () => {
-    const { currentView, setCurrentView } = usePlayer();
+    const { currentView, setCurrentView, openModal } = usePlayer();
 
     return (
-        <nav className="lg:hidden flex justify-around items-center bg-black p-4 text-neutral-400 border-t border-neutral-800">
+        <nav className="lg:hidden flex justify-around items-center bg-gradient-to-t from-black to-neutral-900 py-2 text-neutral-400 border-t border-neutral-800 safe-bottom h-[72px]">
             <button
                 onClick={() => setCurrentView('home')}
-                className={`flex flex-col items-center gap-1 ${currentView === 'home' || currentView === 'playlist' ? 'text-white' : ''}`}
+                className={`flex flex-col items-center gap-1 w-16 ${currentView === 'home' || currentView === 'playlist' ? 'text-white' : ''} active:scale-95 transition-transform`}
             >
-                <HomeIcon />
-                <span className="text-xs">Home</span>
+                <HomeIcon size={22} />
+                <span className="text-[10px] font-medium">Home</span>
             </button>
+
             <button
                 onClick={() => setCurrentView('search')}
-                className={`flex flex-col items-center gap-1 ${currentView === 'search' ? 'text-white' : ''}`}
+                className={`flex flex-col items-center gap-1 w-16 ${currentView === 'search' ? 'text-white' : ''} active:scale-95 transition-transform`}
             >
-                <SearchIcon />
-                <span className="text-xs">Search</span>
+                <SearchIcon size={22} />
+                <span className="text-[10px] font-medium">Search</span>
             </button>
+
             <button
-                onClick={() => setCurrentView('home')} // Library usually goes to home/library in this simple app
-                className={`flex flex-col items-center gap-1 ${currentView === 'playlist' ? 'text-white' : ''}`}
+                onClick={() => openModal('upload')}
+                className="flex flex-col items-center justify-center active:scale-95 transition-transform group"
             >
-                <PlaylistIcon />
-                <span className="text-xs">Library</span>
+                <div className="bg-emerald-500 rounded-full p-3 shadow-lg group-hover:bg-emerald-400 transition-colors">
+                    <PlusIcon size={24} color="black" />
+                </div>
+            </button>
+
+            <button
+                onClick={() => setCurrentView('home')}
+                className={`flex flex-col items-center gap-1 w-16 ${currentView === 'playlist' ? 'text-white' : ''} active:scale-95 transition-transform`}
+            >
+                <PlaylistIcon size={22} />
+                <span className="text-[10px] font-medium">Library</span>
             </button>
         </nav>
     );

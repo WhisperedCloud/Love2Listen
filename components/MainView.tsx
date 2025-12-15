@@ -157,15 +157,15 @@ const MainView: React.FC = () => {
           </button>
         </div>
 
-        <div>
+        <div className="overflow-x-auto">
           {selectedPlaylist.songs.length > 0 ? (
-            <table className="w-full text-left table-fixed">
+            <table className="w-full text-left table-fixed min-w-[400px] md:min-w-full">
               <thead className="text-neutral-400 border-b border-neutral-700">
                 <tr>
                   <th className="p-2 w-10 font-normal text-center">#</th>
                   <th className="p-2 font-normal">Title</th>
-                  <th className="p-2 font-normal hidden lg:table-cell">Album</th>
-                  <th className="p-2 font-normal w-16 hidden sm:table-cell">Duration</th>
+                  <th className="p-2 font-normal">Album</th>
+                  <th className="p-2 font-normal w-16">Duration</th>
                   <th className="p-2 font-normal w-10"></th>
                 </tr>
               </thead>
@@ -197,8 +197,8 @@ const MainView: React.FC = () => {
                           <p className="text-sm text-neutral-400 truncate">{song.artist}</p>
                         </div>
                       </td>
-                      <td className="p-3 text-neutral-400 truncate hidden lg:table-cell">{song.album}</td>
-                      <td className="p-3 text-neutral-400 hidden sm:table-cell">{formatDuration(song.duration)}</td>
+                      <td className="p-3 text-neutral-400 truncate">{song.album}</td>
+                      <td className="p-3 text-neutral-400">{formatDuration(song.duration)}</td>
                       <td className="p-3 text-neutral-400 relative">
                         <button onClick={() => setActiveMenu(activeMenu === song.id ? null : song.id)} className="opacity-0 group-hover:opacity-100">
                           <ThreeDotsIcon />

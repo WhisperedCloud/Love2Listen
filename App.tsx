@@ -8,8 +8,22 @@ import HomeView from './components/HomeView';
 import SearchView from './components/SearchView';
 import ModalManager from './components/ModalManager';
 
+import SplashPage from './components/SplashPage';
+
 const AppContent: React.FC = () => {
   const { isLyricsVisible, currentView } = usePlayer();
+  const [showSplash, setShowSplash] = React.useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (showSplash) {
+    return <SplashPage />;
+  }
 
   const renderMainView = () => {
     if (isLyricsVisible) return <LyricsView />;

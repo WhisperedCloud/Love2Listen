@@ -67,7 +67,7 @@ const saveToDB = (db: IDBDatabase, storeName: string, data: any): Promise<void> 
 };
 
 type View = 'home' | 'search' | 'playlist';
-type ModalType = 'createPlaylist' | 'upload' | 'addToPlaylist';
+type ModalType = 'createPlaylist' | 'upload' | 'addToPlaylist' | 'editLyrics';
 
 // --- Player Context ---
 interface PlayerContextType {
@@ -113,6 +113,7 @@ interface PlayerContextType {
   addSongToQueue: (song: Song) => void;
   deletePlaylist: (playlistId: number) => void;
   startPlaylistPlayback: (playlist: Playlist, shuffle: boolean) => void;
+  updateSongLyrics: (songId: number, lyrics: string) => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -701,21 +702,21 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
       const albumInfo = song.album && song.album !== 'Unknown Album' ? ` from the album "${song.album}"` : '';
 
       const prompt = `
-        Find the complete and accurate lyrics for the song titled "${song.title}" by the musical artist "${cleanArtist}"${albumInfo}.
+        You are a music expert. Find the accurate and original lyrics for the song "${song.title}" by "${cleanArtist}"${albumInfo}.
 
-        IMPORTANT INSTRUCTIONS:
-        1. Respond ONLY with the song's lyrics.
-        2. Do NOT include the song title, artist name, or any other headers in your response.
-        3. Do NOT include any conversational text like "Here are the lyrics...".
-        4. Do NOT include section markers like [Verse], [Chorus], [Bridge], etc.
-        5. Ensure line breaks are preserved for proper formatting.
+        Strict Rules:
+        1. Return ONLY the lyrics. No titles, no intro text, no "Verse 1" markers.
+        2. If you are not 100% sure about the lyrics or if the song is instrumental, return exactly "Lyrics not found."
+        3. Do not make up lyrics.
+        4. Maintain original line breaks.
       `.trim();
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
+        model: 'gemini-2.0-flash-exp',
+        contents: [{ parts: [{ text: prompt }] }],
         config: {
           maxOutputTokens: 2048,
+          temperature: 0.2,
         },
       });
 
@@ -740,6 +741,20 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
       song.lyrics = "Could not fetch lyrics.";
     }
   }, []);
+
+  const updateSongLyrics = (songId: number, lyrics: string) => {
+    setPlaylists(prev => prev.map(p => ({
+      ...p,
+      songs: p.songs.map(s => s.id === songId ? { ...s, lyrics } : s)
+    })));
+
+    // Also update if it's in the queue or current song (though queue often references playlist songs, copies might exist)
+    setQueue(prev => prev.map(s => s.id === songId ? { ...s, lyrics } : s));
+    setShuffledQueue(prev => prev.map(s => s.id === songId ? { ...s, lyrics } : s));
+
+    // Save to DB not strictly needed if we save playlists to localstorage on change, but good to be consistent. 
+    // Since lyrics are part of the song object in playlists, the useEffect saving playlists to localStorage will catch this.
+  };
 
   const value = {
     playlists,
@@ -784,6 +799,7 @@ export const PlayerProvider: React.FC<{ children: React.ReactNode }> = ({
     addSongToQueue,
     deletePlaylist,
     startPlaylistPlayback,
+    updateSongLyrics,
   };
 
   return (

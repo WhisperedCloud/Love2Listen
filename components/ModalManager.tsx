@@ -123,29 +123,57 @@ const UploadModal: React.FC<{ onClose: () => void, targetPlaylistId?: number }> 
 };
 
 const AddToPlaylistModal: React.FC<{ onClose: () => void, song: Song }> = ({ onClose, song }) => {
-    const { playlists, addSongToExistingPlaylist, openModal } = usePlayer();
+  const { playlists, addSongToExistingPlaylist, openModal } = usePlayer();
 
-    const handleSelectPlaylist = (playlistId: number) => {
-        addSongToExistingPlaylist(song, playlistId);
-        onClose();
-    };
+  const handleSelectPlaylist = (playlistId: number) => {
+    addSongToExistingPlaylist(song, playlistId);
+    onClose();
+  };
 
-    return (
-        <ModalWrapper title="Add to Playlist" onClose={onClose}>
-            <button onClick={() => openModal('createPlaylist')} className="w-full flex items-center gap-2 p-3 rounded hover:bg-neutral-700 mb-2">
-                <div className="w-10 h-10 bg-neutral-700 flex items-center justify-center rounded"><PlusIcon /></div>
-                New Playlist
-            </button>
-            <div className="max-h-60 overflow-y-auto">
-                {playlists.map(p => (
-                    <div key={p.id} onClick={() => handleSelectPlaylist(p.id)} className="flex items-center gap-3 p-2 rounded hover:bg-neutral-700 cursor-pointer">
-                        <img src={p.coverArt} alt={p.name} className="w-10 h-10 rounded object-cover" />
-                        <span>{p.name}</span>
-                    </div>
-                ))}
-            </div>
-        </ModalWrapper>
-    );
+  return (
+    <ModalWrapper title="Add to Playlist" onClose={onClose}>
+      <button onClick={() => openModal('createPlaylist')} className="w-full flex items-center gap-2 p-3 rounded hover:bg-neutral-700 mb-2">
+        <div className="w-10 h-10 bg-neutral-700 flex items-center justify-center rounded"><PlusIcon /></div>
+        New Playlist
+      </button>
+      <div className="max-h-60 overflow-y-auto">
+        {playlists.map(p => (
+          <div key={p.id} onClick={() => handleSelectPlaylist(p.id)} className="flex items-center gap-3 p-2 rounded hover:bg-neutral-700 cursor-pointer">
+            <img src={p.coverArt} alt={p.name} className="w-10 h-10 rounded object-cover" />
+            <span>{p.name}</span>
+          </div>
+        ))}
+      </div>
+    </ModalWrapper>
+  );
+};
+const EditLyricsModal: React.FC<{ onClose: () => void, song: Song }> = ({ onClose, song }) => {
+  const { updateSongLyrics } = usePlayer();
+  const [lyrics, setLyrics] = useState(song.lyrics || "");
+
+  const handleSave = () => {
+    updateSongLyrics(song.id, lyrics);
+    onClose();
+  };
+
+  return (
+    <ModalWrapper title={`Edit Lyrics: ${song.title}`} onClose={onClose}>
+      <textarea
+        value={lyrics}
+        onChange={(e) => setLyrics(e.target.value)}
+        placeholder="Enter song lyrics here..."
+        className="w-full h-64 bg-neutral-700 rounded-md p-3 mb-4 text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono text-sm resize-none"
+      />
+      <div className="flex justify-end gap-2">
+        <button type="button" onClick={onClose} className="bg-transparent text-white font-bold py-2 px-4 rounded-full hover:bg-neutral-700">
+          Cancel
+        </button>
+        <button onClick={handleSave} className="bg-emerald-600 text-white font-bold py-2 px-4 rounded-full hover:bg-emerald-500">
+          Save Lyrics
+        </button>
+      </div>
+    </ModalWrapper>
+  );
 };
 
 const ModalManager: React.FC = () => {
@@ -159,10 +187,15 @@ const ModalManager: React.FC = () => {
     case 'upload':
       return <UploadModal onClose={closeModal} targetPlaylistId={typeof modalTarget === 'number' ? modalTarget : undefined} />;
     case 'addToPlaylist':
-        if (modalTarget && typeof modalTarget === 'object' && 'id' in modalTarget) {
-            return <AddToPlaylistModal onClose={closeModal} song={modalTarget as Song} />;
-        }
-        return null;
+      if (modalTarget && typeof modalTarget === 'object' && 'id' in modalTarget) {
+        return <AddToPlaylistModal onClose={closeModal} song={modalTarget as Song} />;
+      }
+      return null;
+    case 'editLyrics':
+      if (modalTarget && typeof modalTarget === 'object' && 'id' in modalTarget) {
+        return <EditLyricsModal onClose={closeModal} song={modalTarget as Song} />;
+      }
+      return null;
     default:
       return null;
   }
