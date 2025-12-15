@@ -5,8 +5,8 @@ const SplashPage: React.FC = () => {
     return (
         <div className="fixed inset-0 bg-neutral-900 flex flex-col items-center justify-center z-50 animate-fade-out" style={{ animationDelay: '1.8s', animationFillMode: 'forwards' }}>
             <div className="flex flex-col items-center animate-bounce-in">
-                <div className="bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-2xl p-6 shadow-2xl mb-6 transform hover:scale-105 transition-transform duration-500">
-                    <MusicNoteIcon size={80} color="white" />
+                <div className="mb-6 transform hover:scale-105 transition-transform duration-500">
+                    <img src="/icon-512.png" alt="Love to Listen Logo" className="w-24 h-24 rounded-2xl shadow-2xl" />
                 </div>
                 <h1 className="text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-500 tracking-tighter animate-pulse" style={{ animationDuration: '2s' }}>
                     Love to Listen
